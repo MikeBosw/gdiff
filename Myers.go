@@ -46,20 +46,19 @@ func (md *myersDiff) Diff(as, bs string) (edits []*edit) {
 outer:
 	for d := 0; d <= m+n; d++ {
 		for k := -d; k <= d; k += 2 {
-			/* first, establish what our X, Y is, based on how we had to have gotten here.
-			 * we must have gotten here in one of two ways: either down from the k+1 line, or right from the k-1 line.
-			 * we pick whichever gets us further towards {m, n}. */
-			var x, y int
-			/* if we're at the bottom, leftmost k-line, the only way to have gotten here is down (from k+1). */
-			bottomLeft := k == -d
-			/* if we're at the top, rightmost k-line, the only way to have gotten here is right (from k-1). */
-			topRight := k == d
+			ki := m + n + k //this k-line's index in the k-line array
 
-			/* index into a k-line array for this k-line */
-			ki := m + n + k
+			/* first, establish what our new X, Y is, based on how we had to have gotten here.
+			 * we must have gotten here in one of two ways: either down, from the k+1 line, or right, from the k-1 line
+			 * we pick whichever gets us further towards {m, n}. */
+
 			var origin *vertex
+			var x, y int
 			{
-				if bottomLeft || (!topRight && kLines[ki-1] < kLines[ki+1]) {
+				/* if we're at the NE (top, rightmost) k-line, the only way to have gotten here is right, from k-1 */
+				/* if we're at the SW k-line, the only way to have gotten here is down, from k+1 */
+				isSW, isNE := k == -d, k == d
+				if isSW || (!isNE && kLines[ki-1] < kLines[ki+1]) {
 					x = kLines[ki+1]
 					origin = breadcrumbs[ki+1]
 				} else {
@@ -68,6 +67,8 @@ outer:
 				}
 				y = x - k
 			}
+
+			/** second, follow the k-line we're on, as far as possible **/
 
 			cursor := &vertex{x, y, origin}
 			{
@@ -78,6 +79,8 @@ outer:
 				breadcrumbs[ki] = cursor
 				kLines[ki] = x
 			}
+
+			/** third, check if we're at the end, and if so, construct our edit path **/
 
 			if x >= m && y >= n {
 				c := 0
