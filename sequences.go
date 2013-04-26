@@ -18,16 +18,19 @@ var (
 	LINE = &tol
 )
 
-//A sequence whose items can be random-accessed at a given index.
+//A sequence whose items (strings) can be random-accessed at a given index.
 type Sequence interface {
 	Len() int
-	At(i int) interface{}
+	// The content of this sequence from start through end (inclusive). Includes any gaps in between items, but does
+	// not include gaps preceding the start or following the end.
+	Range(start, end int) string
+	At(i int) string
 	// If a sequence allows gaps in between its items, the gaps can be accessed using Pre (for gaps preceding an item)
 	// and Post (for gaps following an item).
-	Pre(i int) interface{}
+	Pre(i int) string
 	// If a sequence allows gaps in between its items, the gaps can be accessed using Pre (for gaps preceding an item)
 	// and Post (for gaps following an item).
-	Post(i int) interface{}
+	Post(i int) string
 }
 
 type Sequencer interface {
@@ -74,20 +77,24 @@ func fromMatches(s string, si [][]int) Sequence {
 //data structure for char sequences
 type chars string
 
-func (c *chars) At(i int) interface{} {
-	return string(*c)[i]
+func (c *chars) Range(from, to int) string {
+	return string(*c)[from:to]
+}
+
+func (c *chars) At(i int) string {
+	return string(string(*c)[i])
 }
 
 func (c *chars) Len() int {
 	return len(string(*c))
 }
 
-func (c *chars) Pre(i int) interface{} {
-	return nil
+func (c *chars) Pre(i int) string {
+	return ""
 }
 
-func (c *chars) Post(i int) interface{} {
-	return nil
+func (c *chars) Post(i int) string {
+	return ""
 }
 
 //data structure for word and line sequences
@@ -97,15 +104,28 @@ type ammo struct {
 	bullets []string
 }
 
-func (a *ammo) Pre(i int) interface{} {
+func (a *ammo) Range(from, to int) (result string) {
+	for i := from; i <= to; i++ {
+		if i > from {
+			result += a.Pre(i)
+		}
+		result += a.At(i)
+		if i < to {
+			result += a.Post(i)
+		}
+	}
+	return
+}
+
+func (a *ammo) Pre(i int) string {
 	return a.blanks[i]
 }
 
-func (a *ammo) Post(i int) interface{} {
+func (a *ammo) Post(i int) string {
 	return a.blanks[i+1]
 }
 
-func (a *ammo) At(i int) interface{} {
+func (a *ammo) At(i int) string {
 	return a.bullets[i]
 }
 
