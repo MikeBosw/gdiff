@@ -23,14 +23,12 @@ type Sequence interface {
 	Len() int
 	// The content of this sequence from start through end (inclusive). Includes any gaps in between items, but does
 	// not include gaps preceding the start or following the end.
-	Range(start, end int) string
-	At(i int) string
-	// If a sequence allows gaps in between its items, the gaps can be accessed using Pre (for gaps preceding an item)
-	// and Post (for gaps following an item).
-	Pre(i int) string
-	// If a sequence allows gaps in between its items, the gaps can be accessed using Pre (for gaps preceding an item)
-	// and Post (for gaps following an item).
-	Post(i int) string
+	Range(start, end int) (result string, ok bool)
+	At(i int) (result string, ok bool)
+	// If a sequence allows gaps in between its items, the gaps can be accessed using Pre (for gaps preceding an item).
+	Pre(i int) (result string, ok bool)
+	// If a sequence allows gaps in between its items, the gap following a sequence can be accessed using Suffix().
+	Suffix() string
 }
 
 type Sequencer interface {
@@ -53,82 +51,89 @@ func (m *mode) Sequence(s string) Sequence {
 	case toLines:
 		matches = lines.FindAllStringIndex(s, -1)
 	}
-	return fromMatches(s, matches)
-}
-
-func fromMatches(s string, si [][]int) Sequence {
-	blanks, bullets := make([]string, len(si)+1), make([]string, len(si))
-	var prevEnd int
-	for i, v := range si {
-		start, end := v[0], v[1]
-		if i == len(si) - 1 {
-			if end < len(s) {
-				blanks[len(si)] = s[end:len(s)]
-			}
-		}
-		blanks[i] = s[prevEnd:start]
-		bullets[i] = s[start:end]
-		prevEnd = end
-	}
-	seq := &ammo {blanks, bullets}
-	return seq
+	return &sequence {s, matches}
 }
 
 //data structure for char sequences
 type chars string
 
-func (c *chars) Range(from, to int) string {
-	return string(*c)[from:to]
+func (c *chars) Range(from, to int) (result string, ok bool) {
+	if from < 0 || to < from || to >= len(string(*c)) {
+		return "", false
+	}
+	return string(*c)[from:to], true
 }
 
-func (c *chars) At(i int) string {
-	return string(string(*c)[i])
+func (c *chars) At(i int) (result string, ok bool) {
+	if i < 0 || i >= len(string(*c)) {
+		return "", false
+	}
+	return string(string(*c)[i]), true
 }
 
 func (c *chars) Len() int {
 	return len(string(*c))
 }
 
-func (c *chars) Pre(i int) string {
-	return ""
+func (c *chars) Pre(i int) (result string, ok bool) {
+	if i < 0 || i >= len(string(*c)) {
+		return "", false
+	}
+	return "", true
 }
 
-func (c *chars) Post(i int) string {
+func (c *chars) Suffix() string {
 	return ""
 }
 
 //data structure for word and line sequences
-//todo: verify memory consumption of string pieces (vs. just indices)
-type ammo struct {
-	blanks []string
-	bullets []string
+type sequence struct {
+	raw string
+	runs [][]int
 }
 
-func (a *ammo) Range(from, to int) (result string) {
-	for i := from; i <= to; i++ {
-		if i > from {
-			result += a.Pre(i)
-		}
-		result += a.At(i)
-		if i < to {
-			result += a.Post(i)
-		}
+func (a *sequence) Range(from, to int) (result string, ok bool) {
+	if from < 0 || to < from || to >= a.Len() {
+		return "", false
 	}
-	return
+	fStart, tEnd := a.runs[from][0], a.runs[to][1]
+	return a.raw[fStart:tEnd+1], true
 }
 
-func (a *ammo) Pre(i int) string {
-	return a.blanks[i]
+func (a *sequence) Pre(i int) (prefix string, ok bool) {
+	if a.Len() <= i {
+		return "", false
+	}
+	run := a.runs[i]
+	iStart := run[0] //beginning of the ith word (1 + end of the prefix)
+	pStart := 0		 //beginning of the i-1th word (beginning of the prefix)
+	if i > 0 {
+		pStart = a.runs[i-1][1]
+	}
+	return a.raw[pStart:iStart], true
 }
 
-func (a *ammo) Post(i int) string {
-	return a.blanks[i+1]
+func (a *sequence) Suffix() string {
+	if len(a.runs) == 0 {
+		return a.raw
+	}
+	run := a.runs[len(a.runs)-1]
+	end := run[1]
+	if end + 1 >= len(a.raw) {
+		return ""
+	}
+	return a.raw[end+1:len(a.raw)]
 }
 
-func (a *ammo) At(i int) string {
-	return a.bullets[i]
+func (a *sequence) At(i int) (result string, ok bool) {
+	if i < 0 || i >= a.Len() {
+		return "", false
+	}
+	run := a.runs[i]
+	start, end := run[0], run[1]
+	return a.raw[start:end+1], true
 }
 
-func (a *ammo) Len() int {
-	return len(a.bullets)
+func (a *sequence) Len() int {
+	return len(a.runs)
 }

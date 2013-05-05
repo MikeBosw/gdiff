@@ -32,12 +32,12 @@ func (md *myersDiff) seq(as, bs string) (Sequence, Sequence) {
 	return md.s.Sequence(as), md.s.Sequence(bs)
 }
 
-func (md *myersDiff) Diff(as, bs string) (edits []*edit) {
+func (md *myersDiff) Diff(as, bs string) (a, b Sequence, edits []*edit) {
 	if as == bs {
 		return
 	}
 
-	a, b := md.seq(as, bs)
+	a, b = md.seq(as, bs)
 
 	m, n := a.Len(), b.Len()
 	kLines := make([]int, (m+n)*2+1)
@@ -101,7 +101,9 @@ outer:
 
 func follow(a, b Sequence, x, y int) (int, int) {
 	for x < a.Len() && y < b.Len() {
-		if a.At(x) != b.At(y) {
+		atX, _ := a.At(x)
+		atY, _ := b.At(y)
+		if atX != atY {
 			break
 		}
 		x, y = x+1, y+1
@@ -114,25 +116,25 @@ func toEdits(path []*vertex) (edits []*edit) {
 	var x, y int
 	flew := false
 	for _, v := range path {
-		/*fmt.Printf("{%d,%d} ", v.ai, v.bi)*/
 		if v.ai == x && v.bi == y {
 			continue
 		}
 		if v.ai > x && v.bi > y {
-			/*fmt.Printf("(match) \n")*/
+			//match
 			x, y, flew = v.ai, v.bi, true
 			continue
 		}
 		flew = false
-		var es, ee int
 		var et editType
+		//edit start, edit end
+		var es, ee int
 		if v.ai > x {
-			/*fmt.Printf("(deletion) \n")*/
+			//deletion
 			et = DELETE
 			es = x
 			ee = v.ai - 1
 		} else if v.bi > y {
-			/*fmt.Printf("(insertion) \n")*/
+			//insertion
 			et = INSERT
 			es = y
 			ee = v.bi - 1
