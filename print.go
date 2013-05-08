@@ -2,9 +2,10 @@ package diff
 
 import "io"
 
-func Unified(a, b Sequence, edits []*edit, w io.Writer) bool {
+func (d *Diff) Unified(w io.Writer) bool {
 	lastEnd := 0
-	for _, v := range edits {
+	a, b := d.a, d.b
+	for _, v := range d.edits {
 		switch v.Type {
 		case DELETE:
 			if lastEnd < v.Start {

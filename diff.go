@@ -1,9 +1,25 @@
 package diff
 
-import "io"
-
-//print the unified diff of strings a and b to the given writer
-//unified is a line-by-line format
-func UnifiedDiff(a, b string, w io.Writer) {
-
+type Diff struct {
+	edits []*edit
+	a, b Sequence
+	split SequenceType
 }
+
+func (diff *Diff) Edits() []*edit {
+	return diff.edits
+}
+
+type edit struct {
+	Start, End int
+	Type         editType
+}
+
+type editType rune
+
+const (
+	INSERT editType = 'i'
+	DELETE editType = 'd'
+)
+
+//// see sequence.go for Sequence and SequenceType

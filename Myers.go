@@ -2,44 +2,28 @@ package diff
 
 import "fmt"
 
-type editType rune
-
-const (
-	INSERT editType = 'i'
-	DELETE editType = 'd'
-)
-
 type vertex struct {
 	/* 1-based index into a string (subtract 1 when indexing into the string) */
 	ai, bi int
 	adj *vertex
 }
 
-type edit struct {
-	Start, End int
-	Type         editType
+type myersDiff struct {}
+
+func MyersDiff() *myersDiff {
+	return &myersDiff{}
 }
 
-type myersDiff struct {
-	s Sequencer
-}
-
-func MyersDiff(m Sequencer) *myersDiff {
-	return &myersDiff{m}
-}
-
-func (md *myersDiff) seq(as, bs string) (Sequence, Sequence) {
-	return md.s.Sequence(as), md.s.Sequence(bs)
-}
-
-func (md *myersDiff) Diff(as, bs string) (a, b Sequence, edits []*edit) {
+func (md *myersDiff) Diff(as, bs string, split SequenceType) (diff *Diff) {
 	if as == bs {
 		return
 	}
 
-	a, b = md.seq(as, bs)
+	diff = new(Diff)
 
-	m, n := a.Len(), b.Len()
+	diff.a, diff.b = seq(as, split), seq(bs, split)
+
+	m, n := diff.a.Len(), diff.b.Len()
 	kLines := make([]int, (m+n)*2+1)
 	breadcrumbs := make([]*vertex, (m+n)*2+1)
 
@@ -49,7 +33,7 @@ outer:
 			ki := m + n + k //this k-line's index in the k-line array
 
 			/* first, establish what our new X, Y is, based on how we had to have gotten here.
-			 * we must have gotten here in one of two ways: either down, from the k+1 line, or right, from the k-1 line
+			 * we can have gotten here in one of two ways: either down, from the k+1 line, or right, from the k-1 line
 			 * we pick whichever gets us further towards {m, n}. */
 
 			var origin *vertex
@@ -72,7 +56,7 @@ outer:
 
 			cursor := &vertex{x, y, origin}
 			{
-				x, y = follow(a, b, x, y)
+				x, y = follow(diff.a, diff.b, x, y)
 				if x != cursor.ai || y != cursor.bi {
 					cursor = &vertex{x, y, cursor}
 				}
@@ -91,7 +75,7 @@ outer:
 				for i, v := c-1, cursor; v != nil; i, v = i-1, v.adj {
 					path[i] = v
 				}
-				edits = toEdits(path)
+				diff.edits = toEdits(path)
 				break outer
 			}
 		}

@@ -2,59 +2,55 @@ package diff
 
 import "regexp"
 
-type mode int16
+var lines, words = regexp.MustCompile(`[^\n\r]+`), regexp.MustCompile(`[^ \t\n\r]+`)
+
+type SequenceType int16
+
+//TODO: something more sophisticated than chars vs words vs lines.
+//e.g. ignore whitespace between words but still treat lines as the units of difference.
 
 const (
-	toChars mode = iota
-	toWords
-	toLines
+	//treat chars as units of difference
+	CHAR_SPLIT SequenceType = iota
+
+	//treat words as units of difference
+	WORD_SPLIT
+
+	//treat lines as units of difference
+	LINE_SPLIT
 )
 
-var toc, tow, tol = toChars, toWords, toLines
-
-var (
-	CHAR = &toc
-	WORD = &tow
-	LINE = &tol
-)
-
-//A sequence whose items (strings) can be random-accessed at a given index.
+//Some string, sequenced into lines, words, or characters of text. Elements can be random-accessed at a given index.
+//The whitespace (if any) that precedes the elements can be random-accessed at a given index.
 type Sequence interface {
 	Len() int
-	// The content of this sequence from start through end (inclusive). Includes any gaps in between items, but does
-	// not include gaps preceding the start or following the end.
+	// The content of this sequence from start through end (inclusive). Includes any gaps in between elements, but does
+	// not include whitespace preceding the start element or following the end element.
 	Range(start, end int) (result string, ok bool)
 	At(i int) (result string, ok bool)
-	// If a sequence allows gaps in between its items, the gaps can be accessed using Pre (for gaps preceding an item).
+	// The space between each word or line can be accessed using Pre (for space preceding the word or line at index i).
 	Pre(i int) (result string, ok bool)
-	// If a sequence allows gaps in between its items, the gap following a sequence can be accessed using Suffix().
+	// The space following the last word or line can be accessed using Suffix()
 	Suffix() string
 }
 
-type Sequencer interface {
-	Sequence(s string) Sequence
-}
-
-var (
-	words = regexp.MustCompile(`[^ \t\n\r]+`)
-	lines = regexp.MustCompile(`[^\n\r]+`)
-)
-
-func (m *mode) Sequence(s string) Sequence {
-	var matches [][]int
-	switch *m {
-	case toChars:
-		seq := chars(s)
-		return &seq
-	case toWords:
-		matches = words.FindAllStringIndex(s, -1)
-	case toLines:
-		matches = lines.FindAllStringIndex(s, -1)
+func seq(s string, split SequenceType) Sequence {
+	var rex *regexp.Regexp
+	switch split {
+	case CHAR_SPLIT:
+		value := chars(s)
+		return &value
+	case WORD_SPLIT:
+		rex = words
+	case LINE_SPLIT:
+		rex = lines
 	}
+	var matches [][]int
+	matches = rex.FindAllStringIndex(s, -1)
 	return &sequence {s, matches}
 }
 
-//data structure for char sequences
+//Sequence data type for char sequences
 type chars string
 
 func (c *chars) Range(from, to int) (result string, ok bool) {
@@ -86,7 +82,7 @@ func (c *chars) Suffix() string {
 	return ""
 }
 
-//data structure for word and line sequences
+//Sequence data type for word and line sequences
 type sequence struct {
 	raw string
 	runs [][]int
@@ -97,7 +93,7 @@ func (a *sequence) Range(from, to int) (result string, ok bool) {
 		return "", false
 	}
 	fStart, tEnd := a.runs[from][0], a.runs[to][1]
-	return a.raw[fStart:tEnd+1], true
+	return a.raw[fStart:tEnd], true
 }
 
 func (a *sequence) Pre(i int) (prefix string, ok bool) {
@@ -131,7 +127,7 @@ func (a *sequence) At(i int) (result string, ok bool) {
 	}
 	run := a.runs[i]
 	start, end := run[0], run[1]
-	return a.raw[start:end+1], true
+	return a.raw[start:end], true
 }
 
 func (a *sequence) Len() int {
