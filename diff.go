@@ -6,6 +6,10 @@ type Diff struct {
 	split SequenceType
 }
 
+type Differ interface {
+	Diff(as, bs string, split SequenceType) (diff *Diff)
+}
+
 func (diff *Diff) Edits() []*edit {
 	return diff.edits
 }
