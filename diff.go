@@ -2,7 +2,7 @@ package diff
 
 type Diff struct {
 	edits []*edit
-	a, b Sequence
+	a, b  Sequence
 	split SequenceType
 }
 
@@ -16,7 +16,7 @@ func (diff *Diff) Edits() []*edit {
 
 type edit struct {
 	Start, End int
-	Type         editType
+	Type       editType
 }
 
 type editType rune

@@ -47,7 +47,7 @@ func seq(s string, split SequenceType) Sequence {
 	}
 	var matches [][]int
 	matches = rex.FindAllStringIndex(s, -1)
-	return &sequence {s, matches}
+	return &sequence{s, matches}
 }
 
 //Sequence data type for char sequences
@@ -84,7 +84,7 @@ func (c *chars) Suffix() string {
 
 //Sequence data type for word and line sequences
 type sequence struct {
-	raw string
+	raw  string
 	runs [][]int
 }
 
@@ -102,7 +102,7 @@ func (a *sequence) Pre(i int) (prefix string, ok bool) {
 	}
 	run := a.runs[i]
 	iStart := run[0] //beginning of the ith word (1 + end of the prefix)
-	pStart := 0		 //beginning of the i-1th word (beginning of the prefix)
+	pStart := 0      //beginning of the i-1th word (beginning of the prefix)
 	if i > 0 {
 		pStart = a.runs[i-1][1]
 	}
@@ -115,10 +115,10 @@ func (a *sequence) Suffix() string {
 	}
 	run := a.runs[len(a.runs)-1]
 	end := run[1]
-	if end + 1 >= len(a.raw) {
+	if end+1 >= len(a.raw) {
 		return ""
 	}
-	return a.raw[end+1:len(a.raw)]
+	return a.raw[end+1 : len(a.raw)]
 }
 
 func (a *sequence) At(i int) (result string, ok bool) {

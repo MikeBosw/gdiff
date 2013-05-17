@@ -5,10 +5,10 @@ import "fmt"
 type vertex struct {
 	/* 1-based index into a string (subtract 1 when indexing into the string) */
 	ai, bi int
-	adj *vertex
+	adj    *vertex
 }
 
-type myersDiff struct {}
+type myersDiff struct{}
 
 func MyersDiffer() Differ {
 	return &myersDiff{}
