@@ -15,19 +15,17 @@ func MyersDiffer() Differ {
 }
 
 func (md *myersDiff) Diff(as, bs string, split SequenceType) (diff *Diff) {
+	diff = new(Diff)
+	diff.a, diff.b = seq(as, split), seq(bs, split)
+
 	if as == bs {
 		return
 	}
-
-	diff = new(Diff)
-
-	diff.a, diff.b = seq(as, split), seq(bs, split)
 
 	m, n := diff.a.Len(), diff.b.Len()
 	kLines := make([]int, (m+n)*2+1)
 	breadcrumbs := make([]*vertex, (m+n)*2+1)
 
-outer:
 	for d := 0; d <= m+n; d++ {
 		for k := -d; k <= d; k += 2 {
 			ki := m + n + k //this k-line's index in the k-line array
@@ -76,7 +74,7 @@ outer:
 					path[i] = v
 				}
 				diff.edits = toEdits(path)
-				break outer
+				return
 			}
 		}
 	}

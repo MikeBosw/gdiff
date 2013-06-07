@@ -27,11 +27,14 @@ type Sequence interface {
 	// The content of this sequence from start through end (inclusive). Includes any gaps in between elements, but does
 	// not include whitespace preceding the start element or following the end element.
 	Range(start, end int) (result string, ok bool)
+	// The content of this sequence from start through end (inclusive). Includes any gaps in between elements, as well
+	// as any whitespace following the end element. Does not include whitespace preceding the start element.
+	RangeWithTail(start, end int) (result string, ok bool)
 	At(i int) (result string, ok bool)
-	// The space between each word or line can be accessed using Pre (for space preceding the word or line at index i).
-	Pre(i int) (result string, ok bool)
-	// The space following the last word or line can be accessed using Suffix()
-	Suffix() string
+	// The space following the word or line at index i
+	Tail(i int) (result string, ok bool)
+	// The space preceding the first word or line
+	Head() string
 }
 
 func seq(s string, split SequenceType) Sequence {
@@ -60,6 +63,10 @@ func (c *chars) Range(from, to int) (result string, ok bool) {
 	return string(*c)[from:to], true
 }
 
+func (c *chars) RangeWithTail(from, to int) (result string, ok bool) {
+	return c.Range(from, to)
+}
+
 func (c *chars) At(i int) (result string, ok bool) {
 	if i < 0 || i >= len(string(*c)) {
 		return "", false
@@ -71,14 +78,14 @@ func (c *chars) Len() int {
 	return len(string(*c))
 }
 
-func (c *chars) Pre(i int) (result string, ok bool) {
+func (c *chars) Tail(i int) (result string, ok bool) {
 	if i < 0 || i >= len(string(*c)) {
 		return "", false
 	}
 	return "", true
 }
 
-func (c *chars) Suffix() string {
+func (c *chars) Head() string {
 	return ""
 }
 
@@ -96,29 +103,35 @@ func (a *sequence) Range(from, to int) (result string, ok bool) {
 	return a.raw[fStart:tEnd], true
 }
 
-func (a *sequence) Pre(i int) (prefix string, ok bool) {
+func (a *sequence) RangeWithTail(from, to int) (result string, ok bool) {
+	if from < 0 || to < from || to >= a.Len() {
+		return "", false
+	}
+	fStart, tEnd := a.runs[from][0], a.runs[to][1]
+	tail, _ := a.Tail(to)
+	return a.raw[fStart:tEnd] + tail, true
+}
+
+func (a *sequence) Tail(i int) (prefix string, ok bool) {
 	if a.Len() <= i {
 		return "", false
 	}
 	run := a.runs[i]
-	iStart := run[0] //beginning of the ith word (1 + end of the prefix)
-	pStart := 0      //beginning of the i-1th word (beginning of the prefix)
-	if i > 0 {
-		pStart = a.runs[i-1][1]
+	iStart := run[1] //end of the ith word (index of its last char, + 1)
+	pStart := iStart //beginning of the i+1th word (beginning of the suffix)
+	if i+1 < a.Len() {
+		pStart = a.runs[i+1][0]
 	}
-	return a.raw[pStart:iStart], true
+	return a.raw[iStart:pStart], true
 }
 
-func (a *sequence) Suffix() string {
+func (a *sequence) Head() string {
 	if len(a.runs) == 0 {
 		return a.raw
 	}
-	run := a.runs[len(a.runs)-1]
-	end := run[1]
-	if end+1 >= len(a.raw) {
-		return ""
-	}
-	return a.raw[end+1 : len(a.raw)]
+	start := 0
+	end := a.runs[0][0]
+	return a.raw[start:end]
 }
 
 func (a *sequence) At(i int) (result string, ok bool) {
