@@ -1,4 +1,4 @@
-package diff
+package gdiff
 
 type Diff struct {
 	edits []*edit
