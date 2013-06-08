@@ -10,14 +10,14 @@ type SequenceType int16
 //e.g. ignore whitespace between words but still treat lines as the units of difference.
 
 const (
-	//treat chars as units of difference
-	CHAR_SPLIT SequenceType = iota
+	//treat lines as units of difference
+	LINE_SPLIT SequenceType = iota
 
 	//treat words as units of difference
 	WORD_SPLIT
 
-	//treat lines as units of difference
-	LINE_SPLIT
+	//treat chars as units of difference
+	CHAR_SPLIT
 )
 
 //Some string, sequenced into lines, words, or characters of text. Elements can be random-accessed at a given index.
