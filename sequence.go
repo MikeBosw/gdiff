@@ -4,14 +4,18 @@ import "regexp"
 
 var lines, words = regexp.MustCompile(`[^\n\r]+`), regexp.MustCompile(`[^ \t\n\r]+`)
 
-type SequenceType int16
+type Sequencer interface {
+	Split(s string) Sequence
+}
+
+type sequenceType int8
 
 //TODO: something more sophisticated than chars vs words vs lines.
 //e.g. ignore whitespace between words but still treat lines as the units of difference.
 
 const (
 	//treat lines as units of difference
-	LINE_SPLIT SequenceType = iota
+	LINE_SPLIT sequenceType = iota
 
 	//treat words as units of difference
 	WORD_SPLIT
@@ -37,9 +41,9 @@ type Sequence interface {
 	Head() string
 }
 
-func seq(s string, split SequenceType) Sequence {
+func (seq sequenceType) Split(s string) Sequence {
 	var rex *regexp.Regexp
-	switch split {
+	switch seq {
 	case CHAR_SPLIT:
 		value := chars(s)
 		return &value

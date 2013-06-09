@@ -2,28 +2,28 @@ package gdiff
 
 import "fmt"
 
-type DiffAlgo rune
+type DiffAlgo string
 
 const (
-	MYERS DiffAlgo = iota
+	MYERS DiffAlgo = "Myers"
 )
 
 type Diff struct {
-	edits []*edit
+	edits []*Edit
 	a, b  Sequence
-	split SequenceType
+	split Sequencer
 }
 
 type Differ interface {
-	Diff(as, bs string, split SequenceType) (diff *Diff)
+	Diff(as, bs string, split Sequencer) (diff *Diff)
     Algorithm() DiffAlgo
 }
 
-func (diff *Diff) Edits() []*edit {
+func (diff *Diff) Edits() []*Edit {
 	return diff.edits
 }
 
-type edit struct {
+type Edit struct {
 	Start, End int
 	Type       editType
 }
@@ -42,7 +42,7 @@ func DifferUsing(algorithm DiffAlgo) Differ {
 	case MYERS:
 		return MyersDiffer()
 	default:
-		panic(fmt.Sprintf("unrecognized algorithm: %x", rune(algorithm)))
+		panic(fmt.Sprintf("unrecognized algorithm: %x", string(algorithm)))
 	}
 	return nil
 }

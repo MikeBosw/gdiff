@@ -20,9 +20,9 @@ func (md *myersDiffer) Algorithm() DiffAlgo {
 	return MYERS
 }
 
-func (md *myersDiffer) Diff(as, bs string, split SequenceType) (diff *Diff) {
+func (md *myersDiffer) Diff(as, bs string, seq Sequencer) (diff *Diff) {
 	diff = new(Diff)
-	diff.a, diff.b = seq(as, split), seq(bs, split)
+	diff.a, diff.b = seq.Split(as), seq.Split(bs)
 
 	if as == bs {
 		return
@@ -99,8 +99,8 @@ func follow(a, b Sequence, x, y int) (int, int) {
 	return x, y
 }
 
-func toEdits(path []*vertex) (edits []*edit) {
-	edits = make([]*edit, 0)
+func toEdits(path []*vertex) (edits []*Edit) {
+	edits = make([]*Edit, 0)
 	var x, y int
 	flew := false
 	for _, v := range path {
@@ -129,15 +129,15 @@ func toEdits(path []*vertex) (edits []*edit) {
 		} else {
 			panic(fmt.Errorf("impossible"))
 		}
-		var e *edit
+		var e *Edit
 		if len(edits) == 0 || flew {
-			e = &edit{es, ee, et}
+			e = &Edit{es, ee, et}
 			edits = append(edits, e)
 		} else {
 			e = edits[len(edits)-1]
 		}
 		if e.Type != et {
-			edits = append(edits, &edit{es, ee, et})
+			edits = append(edits, &Edit{es, ee, et})
 		} else {
 			e.End = ee
 		}

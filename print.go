@@ -2,7 +2,19 @@ package gdiff
 
 import "io"
 
-func (d *Diff) Unified(w io.Writer) bool {
+type DiffFormatter interface {
+	Print(d *Diff, w io.Writer) bool
+}
+
+type unifiedDiff string
+
+var ud unifiedDiff = "unified"
+
+func Unified() DiffFormatter {
+	return &ud
+}
+
+func (ud *unifiedDiff) Print(d *Diff, w io.Writer) bool {
 	lastEnd := 0
 	a, b := d.a, d.b
 	for _, v := range d.edits {
