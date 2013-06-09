@@ -8,13 +8,17 @@ type vertex struct {
 	adj    *vertex
 }
 
-type myersDiff struct{}
+type myersDiffer struct{}
 
 func MyersDiffer() Differ {
-	return &myersDiff{}
+	return &myersDiffer{}
 }
 
-func (md *myersDiff) Diff(as, bs string, split SequenceType) (diff *Diff) {
+func (md *myersDiffer) Algorithm() DiffAlgo {
+	return MYERS
+}
+
+func (md *myersDiffer) Diff(as, bs string, split SequenceType) (diff *Diff) {
 	diff = new(Diff)
 	diff.a, diff.b = seq(as, split), seq(bs, split)
 
