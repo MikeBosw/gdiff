@@ -10,8 +10,10 @@ type vertex struct {
 
 type myersDiffer struct{}
 
+var singleton *myersDiffer = &myersDiffer{}
+
 func MyersDiffer() Differ {
-	return &myersDiffer{}
+	return singleton
 }
 
 func (md *myersDiffer) Algorithm() DiffAlgo {
