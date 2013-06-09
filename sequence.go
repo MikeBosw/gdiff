@@ -15,13 +15,13 @@ type sequenceType int8
 
 const (
 	//treat lines as units of difference
-	LINE_SPLIT sequenceType = iota
+	LineSplit sequenceType = iota
 
 	//treat words as units of difference
-	WORD_SPLIT
+	WordSplit
 
 	//treat chars as units of difference
-	CHAR_SPLIT
+	CharSplit
 )
 
 //Some string, sequenced into lines, words, or characters of text. Elements can be random-accessed at a given index.
@@ -44,12 +44,12 @@ type Sequence interface {
 func (seq sequenceType) Split(s string) Sequence {
 	var rex *regexp.Regexp
 	switch seq {
-	case CHAR_SPLIT:
+	case CharSplit:
 		value := chars(s)
 		return &value
-	case WORD_SPLIT:
+	case WordSplit:
 		rex = words
-	case LINE_SPLIT:
+	case LineSplit:
 		rex = lines
 	}
 	var matches [][]int

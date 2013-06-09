@@ -5,7 +5,7 @@ import "fmt"
 type DiffAlgo string
 
 const (
-	MYERS DiffAlgo = "Myers"
+	Myers DiffAlgo = "Myers"
 )
 
 type Diff struct {
@@ -16,7 +16,7 @@ type Diff struct {
 
 type Differ interface {
 	Diff(as, bs string, split Sequencer) (diff *Diff)
-    Algorithm() DiffAlgo
+	Algorithm() DiffAlgo
 }
 
 func (diff *Diff) Edits() []*Edit {
@@ -31,15 +31,15 @@ type Edit struct {
 type editType rune
 
 const (
-	INSERT editType = 'i'
-	DELETE editType = 'd'
+	Insert editType = 'i'
+	Delete editType = 'd'
 )
 
 //// see sequence.go for Sequence and SequenceType
 
 func DifferUsing(algorithm DiffAlgo) Differ {
 	switch algorithm {
-	case MYERS:
+	case Myers:
 		return MyersDiffer()
 	default:
 		panic(fmt.Sprintf("unrecognized algorithm: %x", string(algorithm)))

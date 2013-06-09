@@ -19,7 +19,7 @@ func (ud *unifiedDiff) Print(d *Diff, w io.Writer) bool {
 	a, b := d.a, d.b
 	for _, v := range d.edits {
 		switch v.Type {
-		case DELETE:
+		case Delete:
 			if lastEnd < v.Start {
 				if value, ok := a.RangeWithTail(0, v.Start-1); ok {
 					w.Write([]byte(value))
@@ -34,7 +34,7 @@ func (ud *unifiedDiff) Print(d *Diff, w io.Writer) bool {
 			} else {
 				return false
 			}
-		case INSERT:
+		case Insert:
 			w.Write([]byte("+"))
 			if value, ok := b.RangeWithTail(v.Start, v.End); ok {
 				w.Write([]byte(value))

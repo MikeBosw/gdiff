@@ -17,7 +17,7 @@ func MyersDiffer() Differ {
 }
 
 func (md *myersDiffer) Algorithm() DiffAlgo {
-	return MYERS
+	return Myers
 }
 
 func (md *myersDiffer) Diff(as, bs string, seq Sequencer) (diff *Diff) {
@@ -118,12 +118,12 @@ func toEdits(path []*vertex) (edits []*Edit) {
 		var es, ee int
 		if v.ai > x {
 			//deletion
-			et = DELETE
+			et = Delete
 			es = x
 			ee = v.ai - 1
 		} else if v.bi > y {
 			//insertion
-			et = INSERT
+			et = Insert
 			es = y
 			ee = v.bi - 1
 		} else {
