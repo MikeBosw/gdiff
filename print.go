@@ -3,6 +3,7 @@ package gdiff
 import "io"
 
 type DiffFormatter interface {
+	//Print the formatted diff output to the given writer. Return ok or not ok.
 	Print(d *Diff, w io.Writer) bool
 }
 

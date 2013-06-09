@@ -35,7 +35,7 @@ const (
 	Delete editType = 'd'
 )
 
-//// see sequence.go for Sequence and SequenceType
+//// see sequence.go for Sequence and Sequencer
 
 func DifferUsing(algorithm DiffAlgo) Differ {
 	switch algorithm {
