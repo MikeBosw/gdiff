@@ -8,19 +8,33 @@ const (
 	Myers DiffAlgo = "Myers"
 )
 
-type Diff struct {
+type Diff interface {
+	Edits() []*Edit
+	A() Sequence
+	B() Sequence
+}
+
+type diff struct {
 	edits []*Edit
 	a, b  Sequence
 	split Sequencer
 }
 
 type Differ interface {
-	Diff(as, bs string, split Sequencer) (diff *Diff)
+	Diff(as, bs string, split Sequencer) (diff Diff)
 	Algorithm() DiffAlgo
 }
 
-func (diff *Diff) Edits() []*Edit {
+func (diff *diff) Edits() []*Edit {
 	return diff.edits
+}
+
+func (diff *diff) A() Sequence {
+	return diff.a
+}
+
+func (diff *diff) B() Sequence {
+	return diff.b
 }
 
 type Edit struct {

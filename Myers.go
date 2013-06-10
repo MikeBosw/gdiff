@@ -20,12 +20,12 @@ func (md *myersDiffer) Algorithm() DiffAlgo {
 	return Myers
 }
 
-func (md *myersDiffer) Diff(as, bs string, seq Sequencer) (diff *Diff) {
-	diff = new(Diff)
+func (md *myersDiffer) Diff(as, bs string, seq Sequencer) Diff {
+	diff := new(diff)
 	diff.a, diff.b = seq.Split(as), seq.Split(bs)
 
 	if as == bs {
-		return
+		return diff
 	}
 
 	m, n := diff.a.Len(), diff.b.Len()
@@ -80,11 +80,11 @@ func (md *myersDiffer) Diff(as, bs string, seq Sequencer) (diff *Diff) {
 					path[i] = v
 				}
 				diff.edits = toEdits(path)
-				return
+				return diff
 			}
 		}
 	}
-	return
+	return diff
 }
 
 func follow(a, b Sequence, x, y int) (int, int) {

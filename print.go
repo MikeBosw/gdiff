@@ -4,7 +4,7 @@ import "io"
 
 type DiffFormatter interface {
 	//Print the formatted diff output to the given writer. Return ok or not ok.
-	Print(d *Diff, w io.Writer) bool
+	Print(d Diff, w io.Writer) bool
 }
 
 type unifiedDiff string
@@ -15,10 +15,10 @@ func Unified() DiffFormatter {
 	return &ud
 }
 
-func (ud *unifiedDiff) Print(d *Diff, w io.Writer) bool {
+func (ud *unifiedDiff) Print(d Diff, w io.Writer) bool {
 	lastEnd := 0
-	a, b := d.a, d.b
-	for _, v := range d.edits {
+	a, b := d.A(), d.B()
+	for _, v := range d.Edits() {
 		switch v.Type {
 		case Delete:
 			if lastEnd < v.Start {
