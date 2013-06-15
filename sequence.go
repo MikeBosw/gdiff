@@ -24,8 +24,8 @@ const (
 	CharSplit
 )
 
-//Some string, sequenced into lines, words, or characters of text. Elements can be random-accessed at a given index.
-//The whitespace (if any) that precedes the elements can be random-accessed at a given index.
+//Some sequence, e.g., a string split into lines, words, or characters of text. Elements can be random-accessed at a
+//given index. The whitespace (if any) that precedes the elements can be random-accessed at a given index.
 type Sequence interface {
 	Len() int
 	// The content of this sequence from start through end (inclusive). Includes any gaps in between elements, but does

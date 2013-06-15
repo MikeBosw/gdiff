@@ -38,6 +38,7 @@ func (diff *diff) B() Sequence {
 }
 
 type Edit struct {
+	//Start and End are inclusive, 0-based indices. For example, an Insert of the 9th item would have Start: 8, End: 8.
 	Start, End int
 	Type       editType
 }
