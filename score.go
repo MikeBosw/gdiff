@@ -8,20 +8,20 @@ const (
 	simple ScoreAlgo = "simple"
 )
 
-type Comparator interface {
+// produces a score from 0 to 100 indicating the similarity between a Diff's two sides. 100 means identical.
+type Matcher interface {
 	Score(diff Diff) (score float64)
 	Algorithm() ScoreAlgo
 }
 
-type simpleComparator struct {}
+type simpleMatcher int
 
-var simpleton *simpleComparator = &simpleComparator{}
-
-func SimpleComparator() Comparator {
-	return simpleton
+func SimpleMatcher() *simpleMatcher {
+	matcher := simpleMatcher(0)
+	return &matcher
 }
 
-func (*simpleComparator) Algorithm() ScoreAlgo {
+func (*simpleMatcher) Algorithm() ScoreAlgo {
 	return simple
 }
 
@@ -41,7 +41,7 @@ func (s strings) Swap(i, j int) {
 	slice[i], slice[j] = slice[j], slice[i]
 }
 
-func (*simpleComparator) Score(diff Diff) (score float64) {
+func (*simpleMatcher) Score(diff Diff) (score float64) {
 	edits := diff.Edits()
 	max := math.Max(float64(diff.A().Len()), float64(diff.B().Len()))
 	common := max
@@ -50,4 +50,3 @@ func (*simpleComparator) Score(diff Diff) (score float64) {
 	}
 	return common * 100 / max
 }
-
